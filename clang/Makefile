@@ -8,7 +8,16 @@ ifeq ($(CLANG_GTE_10), yes)
 	STD_VER := c++14
 endif
 
-LIBS     := $(CLANG_LIBS) -ldl -pthread -lz -lcurses -ltinfo -lpcre
+ifeq ($(OS),Windows_NT)
+	# ...
+else
+	UNAME_S := $(shell uname -s)
+	ifeq ($(UNAME_S),Linux)
+		CURSES_LIBS := -ltinfo
+	endif
+endif
+
+LIBS     := $(CLANG_LIBS) -ldl -pthread -lz -lcurses $(CURSES_LIBS) -lpcre
 DEFINES  := -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS
 DBGFLAGS := -O0 -g -fno-inline-functions -fno-omit-frame-pointer
 WARFLAGS := -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable

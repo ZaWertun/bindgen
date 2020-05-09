@@ -31,7 +31,7 @@ def print_help_and_bail
     ArchLinux: pacman -S llvm clang gc libyaml
     Ubuntu: apt install clang-4.0 libclang-4.0-dev zlib1g-dev libncurses-dev libgc-dev llvm-4.0-dev libpcre3-dev
     CentOS: yum install crystal libyaml-devel gc-devel pcre-devel zlib-devel clang-devel
-    Mac OS: HELP WANTED!
+    Mac OS: brew install llvm (version 10) && open /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg
 
   If you've installed these in a non-standard location, do one of these:
     1) Make the CLANG environment variable point to your `clang++` executable
@@ -53,8 +53,6 @@ elsif binary = find_clang_binary
 else
   print_help_and_bail
 end
-
-STDERR.puts "Using clang binary #{clang_binary.inspect}"
 
 # Ask clang the paths it uses.
 output = `#{clang_binary} -### #{__DIR__}/src/bindgen.cpp 2>&1`.lines
@@ -167,14 +165,25 @@ def find_libraries(paths, prefix)
   paths
     .map{|p| File.expand_path(p)}
     .uniq
-    .flat_map{|path| Dir["#{path}/lib#{prefix}*.so"]}
+    .flat_map{|path| Dir["#{path}/lib#{prefix}*.{dylib,so}"]}
     .each do |path|
-      if File.basename(path) =~ /^lib([^.]+)\.so$/
+      if File.basename(path) =~ /^lib([^.]+)\.(dylib|so)$/
         res << $1
       end
     end
   res.uniq
 end
+
+lib_dir = ""
+{% if flag?(:darwin) %}
+llvm_config_bin = "/usr/local/opt/llvm/bin/llvm-config"
+if File.exists?(llvm_config_bin) && File.executable?(llvm_config_bin)
+  system_libs = [`#{llvm_config_bin} --libdir`.chomp]
+  clang_binary = Path[llvm_config_bin].dirname + "/clang++"
+  system_includes = ["/usr/local/include", `#{llvm_config_bin} --includedir`.chomp]
+  lib_dir = "-L#{system_libs.first} "
+end
+{% end %}
 
 llvm_libs = find_libraries(system_libs, "LLVM")
 clang_libs = find_libraries(system_libs, "clang")
@@ -188,6 +197,7 @@ print_help_and_bail if llvm_libs.empty? || clang_libs.empty?
 libs = (clang_libs + clang_libs + llvm_libs + llvm_libs).map{|x| "-l#{x}"}
 includes = system_includes.map{|p| File.expand_path(p)}.map{|x| "-I#{x}"}
 
-puts "CLANG_LIBS := " + libs.join(" ")
+STDERR.puts "Using clang binary #{clang_binary.inspect}"
+puts "CLANG_LIBS := #{lib_dir}" + libs.join(" ")
 puts "CLANG_INCLUDES := " + includes.join(" ")
 puts "CLANG_BINARY := " + clang_binary
