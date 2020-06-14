@@ -22,8 +22,10 @@ module Bindgen
       def self.from_yaml(ctx : YAML::ParseContext, node : YAML::Nodes::Node) : String | Bool
         if node.is_a?(YAML::Nodes::Scalar)
           case node.value
-          when "true" then return true
+          when "true"  then return true
           when "false" then return false
+          else
+            # its a string
           end
         end
 
@@ -43,7 +45,7 @@ module Bindgen
         # Custom preamble.  Will be added to each output file right at the
         # beginning, before anything else.
         preamble: {
-          type: String,
+          type:    String,
           nilable: true,
         },
 
@@ -52,7 +54,7 @@ module Bindgen
         # the ran command fails (That means its exit code is not zero), then
         # bindgen fails immediately, passing on the same exit code.
         build: {
-          type: String,
+          type:    String,
           nilable: true,
         },
       )
@@ -86,18 +88,18 @@ module Bindgen
 
         # List of instantiations to create.
         instantiations: {
-          type: Array(Array(String)),
-          default: [ ] of Array(String),
+          type:    Array(Array(String)),
+          default: [] of Array(String),
         },
 
         # Method to access an element at an index.
-        access_method: { type: String, default: "at" },
+        access_method: {type: String, default: "at"},
 
         # Method to add an element at the end.
-        push_method: { type: String, default: "push_back" },
+        push_method: {type: String, default: "push_back"},
 
         # Method telling the current count of elements.
-        size_method: { type: String, default: "size" },
+        size_method: {type: String, default: "size"},
       )
     end
 
@@ -109,14 +111,14 @@ module Bindgen
 
         # Common prefix detection of enums
         prefix: {
-          type: String | Bool,
-          default: false,
+          type:      String | Bool,
+          default:   false,
           converter: StringOrBool,
         },
 
         # Forces a specific `@[Flags]` setting
         flags: {
-          type: Util::Tribool,
+          type:    Util::Tribool,
           default: Util::Tribool.unset,
         },
 
@@ -144,7 +146,7 @@ module Bindgen
 
         # The name mapping.  Can be left out.
         name: {
-          type: String,
+          type:    String,
           nilable: true,
         },
 
@@ -153,13 +155,13 @@ module Bindgen
 
         # Only used if mapping as enum:  C++ mapping type
         type: {
-          type: String,
+          type:    String,
           nilable: true,
         },
 
         # Only used if mapping as enum:  Treat as flags enum?
         flags: {
-          type: Bool,
+          type:    Bool,
           default: false,
         },
       )
@@ -173,7 +175,7 @@ module Bindgen
 
         # Crystal type to inherit from
         inherit_from: {
-          type: String,
+          type:    String,
           nilable: true,
         },
 
@@ -182,7 +184,7 @@ module Bindgen
 
         # Destructor function name
         destructor: {
-          type: String,
+          type:    String,
           nilable: true,
         },
       )
@@ -193,7 +195,7 @@ module Bindgen
       YAML.mapping(
         # Mapping name of the function
         name: {
-          type: String,
+          type:    String,
           nilable: true,
         },
 
@@ -202,15 +204,15 @@ module Bindgen
 
         # Fully crystalize method names?
         crystalize_names: {
-          type: Util::Tribool,
+          type:    Util::Tribool,
           default: Util::Tribool.unset, # Default depends on `#wrapper` being set
-          getter: false,
+          getter:  false,
         },
 
         # `class:` in the YAML!
         wrapper: {
-          key: "class",
-          type: FunctionClass,
+          key:     "class",
+          type:    FunctionClass,
           nilable: true,
         }
       )
@@ -230,13 +232,13 @@ module Bindgen
 
       # Cookbook to use for templates
       cookbook: {
-        type: String,
+        type:    String,
         default: "boehmgc-cpp", # See `Cpp::Cookbook.create_by_name`
       },
 
       # Used processors
       processors: {
-        type: Array(String),
+        type:    Array(String),
         default: Processor::DEFAULT_CHAIN,
       },
 
@@ -245,45 +247,45 @@ module Bindgen
 
       # What to put into `@[Link(ldflags: "x")]`
       library: {
-        type: String,
+        type:    String,
         nilable: true,
       },
 
       # Which enums to wrap
       enums: {
-        type: Hash(String, Enum),
-        default: Hash(String, Enum).new,
+        type:      Hash(String, Enum),
+        default:   Hash(String, Enum).new,
         converter: GenericConverter(Enum),
       },
 
       # Which classes to wrap
       classes: {
-        type: Hash(String, String),
+        type:    Hash(String, String),
         default: Hash(String, String).new,
       },
 
       # Which macros to wrap
       macros: {
-        type: Hash(String, Macro),
+        type:    Hash(String, Macro),
         default: Hash(String, Macro).new,
       },
 
       # Which functions to wrap
       functions: {
-        type: Hash(String, Function),
-        default: Hash(String, Function).new,
+        type:      Hash(String, Function),
+        default:   Hash(String, Function).new,
         converter: GenericConverter(Function),
       },
 
       # Which templates to instantiate
       containers: {
-        type: Array(Container),
+        type:    Array(Container),
         default: Array(Container).new,
       },
 
       # Type database configuration
       types: {
-        type: TypeDatabase::Configuration,
+        type:    TypeDatabase::Configuration,
         default: TypeDatabase::Configuration.new,
       },
 
@@ -292,7 +294,7 @@ module Bindgen
 
       # Find path configuration
       find_paths: {
-        type: FindPath::Configuration,
+        type:    FindPath::Configuration,
         nilable: true,
       },
     )

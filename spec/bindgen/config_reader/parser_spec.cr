@@ -6,15 +6,15 @@ private class MemoryLoader < Bindgen::ConfigReader::Loader
 
   def load(base_file : String, dependency : String)
     key = "#{File.dirname(base_file)}/#{dependency}"
-    { @files[key], key }
+    {@files[key], key}
   end
 end
 
 private class YamlThing
   YAML.mapping(
-    list: { type: Array(String), nilable: true },
+    list: {type: Array(String), nilable: true},
     string: String,
-    recurse: { type: YamlThing, nilable: true },
+    recurse: {type: YamlThing, nilable: true},
   )
 
   def_equals_and_hash @list, @string, @recurse
@@ -39,8 +39,8 @@ end
 # Also tests InnerParser.
 describe Bindgen::ConfigReader::Parser do
   # Used by `.parse`
-  vars = { "foo" => "bar", "one" => "1" }
-  files = { } of String => String
+  vars = {"foo" => "bar", "one" => "1", "version" => "1.0.0"}
+  files = {} of String => String
 
   describe "normal yaml file" do
     it "works normally" do
@@ -163,6 +163,68 @@ describe Bindgen::ConfigReader::Parser do
             string: WRONG
           else:
             string: three
+          recurse: { list: [four], string: five }
+        >).should eq(YamlThing.new(%w[one two], "three", YamlThing.new(%w[four], "five")))
+      end
+    end
+
+    context "versions" do
+      it "newer_or" do
+        parse(%<
+          list: [one, two]
+          string: WRONG
+          if_version_newer_or_0.9.9:
+            string: three
+          recurse: { list: [four], string: five }
+        >).should eq(YamlThing.new(%w[one two], "three", YamlThing.new(%w[four], "five")))
+      end
+
+      it "newer_or equals" do
+        parse(%<
+          list: [one, two]
+          string: WRONG
+          if_version_newer_or_1.0.0:
+            string: three
+          recurse: { list: [four], string: five }
+        >).should eq(YamlThing.new(%w[one two], "three", YamlThing.new(%w[four], "five")))
+      end
+
+      it "not newer_or" do
+        parse(%<
+          list: [one, two]
+          string: three
+          if_version_newer_or_1.0.1:
+            string: WRONG
+          recurse: { list: [four], string: five }
+        >).should eq(YamlThing.new(%w[one two], "three", YamlThing.new(%w[four], "five")))
+      end
+
+      it "older_or" do
+        parse(%<
+          list: [one, two]
+          string: WRONG
+          if_version_older_or_1.0.1:
+            string: three
+          recurse: { list: [four], string: five }
+        >).should eq(YamlThing.new(%w[one two], "three", YamlThing.new(%w[four], "five")))
+      end
+
+      it "older_or equals" do
+        parse(%<
+          list: [one, two]
+          string: WRONG
+          if_version_older_or_1.0.0:
+            string: three
+          recurse: { list: [four], string: five }
+        >).should eq(YamlThing.new(%w[one two], "three", YamlThing.new(%w[four], "five")))
+      end
+
+      it "not older_or" do
+        parse(%<
+          list: [one, two]
+          string: three
+          if_version_older_or_0.9.9:
+            string: WRONG
           recurse: { list: [four], string: five }
         >).should eq(YamlThing.new(%w[one two], "three", YamlThing.new(%w[four], "five")))
       end

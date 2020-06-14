@@ -17,11 +17,11 @@ module Bindgen
     end
 
     DEPTH_MULTIPLIER = 2
-    JUSTIFY_OFFSET = 2
+    JUSTIFY_OFFSET   = 2
     HEAP_COLUMN_SIZE = 8
 
     # Collected stages
-    getter stages = { } of String => Timing
+    getter stages = {} of String => Timing
 
     # Garbage collector statistics *before* any measures.
     getter before : GC::Stats
@@ -44,9 +44,9 @@ module Bindgen
     # The measured data is put into `#stages`.
     def measure(stage_name : String)
       before_gc = GC.stats
-      before = Time.local
+      before = {% if compare_versions(::Crystal::VERSION, "0.28.0-0") >= 0 %} Time.local {% else %} Time.now {% end %}
       result = yield
-      after = Time.local
+      after = {% if compare_versions(::Crystal::VERSION, "0.28.0-0") >= 0 %} Time.local {% else %} Time.now {% end %}
       after_gc = GC.stats
 
       duration = after - before
@@ -86,7 +86,7 @@ module Bindgen
           child_size = child.max_name_length(depth + 1)
         end
 
-        { name_size, child_size }.max
+        {name_size, child_size}.max
       end
     end
 
@@ -96,7 +96,7 @@ module Bindgen
         indent,
         "Stage".ljust(justification - indent.size),
         "Heap".ljust(HEAP_COLUMN_SIZE),
-        " Duration"
+        " Duration",
       }
 
       header.join.colorize.mode(:bold)

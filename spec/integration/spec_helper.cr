@@ -1,7 +1,15 @@
 require "../spec_helper"
 
 # Line prefixes to look out for in `.relocate_line_reports`
-SPEC_METHODS = { "it(", "context(", "describe(" }
+SPEC_METHODS = {"it(", "context(", "describe("}
+
+Spec.before_suite do
+  clean_integration
+end
+
+def clean_integration
+  system "./spec/integration/tmp/clean.sh"
+end
 
 # Builds the project in configuration `NAME.yml`, expecting to yield the files
 # `tmp/NAME.cr`, `tmp/NAME.cpp` and `tmp/NAME.o`.  Additionally, this macro will
@@ -63,7 +71,7 @@ def build_and_run_impl(name, source_start, source_end, source_file)
   tool = Bindgen::Tool.new(__DIR__, config, show_stats: false)
 
   status = nil
-  command = "crystal run #{test_file}"
+  command = %<crystal run --link-flags "-lgccpp" #{test_file}>
   output = IO::Memory.new
 
   # Run the tool and then the test program

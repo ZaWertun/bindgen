@@ -50,8 +50,9 @@ BindgenASTConsumer::~BindgenASTConsumer() {
 
 void BindgenASTConsumer::HandleTranslationUnit(clang::ASTContext &ctx) {
 	this->m_matchFinder.matchAST(ctx);
+  // FIXME: clang segfaults in 6 or newer when calling ParseAST in destructor
 	this->evaluateMacros(ctx);
-	this->serializeAndOutput();
+  this->serializeAndOutput();
 }
 
 static std::string buildMacroEvaluationFile(const std::vector<Macro> &macros) {

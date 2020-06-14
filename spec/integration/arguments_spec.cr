@@ -10,8 +10,10 @@ describe "the argument translation functionality" do
         {{ m.args.size }}.should eq(1)
         # For debugging, dump the arguments here as string.
         # {{ m.args.stringify }}
-        ({{ m.args.first.restriction }}).should eq({{ type }})
-        {{ m.args.first.default_value }}.should eq({{ value }})
+        # {{ m.name }}
+
+        (typeof({{ m.args.first.restriction }}) == typeof({{ type }})).should be_true
+        ({{ m.args.first.default_value }}).should eq {{ value }}
       end
 
       it "copies default of type Int32" do
@@ -32,7 +34,7 @@ describe "the argument translation functionality" do
       end
 
       it "deduces nilability of pointer type defaulting to NULL" do
-        check_default_arg("nilable", Test::Defaults | Nil, nil)
+        check_default_arg("nilable", Test::Defaults?, nil)
       end
     end
   end
