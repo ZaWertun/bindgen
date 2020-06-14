@@ -280,10 +280,6 @@ def print_usage_and_exit
     --llvm-config PATH   Path to llvm-config binary (default: find llvm-config[-*] in PATH)
     --clang PATH         Path to clang binary (default: find clang++[-*] in llvm bindir)
 
-<<<<<<< HEAD
-# Ask clang the paths it uses.
-output = `#{clang_binary} -### #{__DIR__}/src/bindgen.cpp 2>&1`.lines
-=======
     --print-clang-libs   Print detected clang libs and exit (default: false)
     --print-llvm-libs    Print detected llvm libs and exit (default: false)
 
@@ -293,7 +289,6 @@ output = `#{clang_binary} -### #{__DIR__}/src/bindgen.cpp 2>&1`.lines
 
 
   END
->>>>>>> upstream/master
 
   exit 1
 end
@@ -410,12 +405,6 @@ def parse_clang_output(output)
   OPTIONS[:ldflags] = raw_ldflags.split(/"\s+"/)
     .concat(shell_split(ENV.fetch("LDFLAGS", "")))
     .uniq
-<<<<<<< HEAD
-    .flat_map{|path| Dir["#{path}/lib#{prefix}*.{dylib,so}"]}
-    .each do |path|
-      if File.basename(path) =~ /^lib([^.]+)\.(dylib|so)$/
-        res << $1
-=======
 
   # Interpret the argument lists
   flags = cppflags + ldflags
@@ -430,25 +419,9 @@ def parse_clang_output(output)
         system_include_dirs << flag
         index += 1
         next
->>>>>>> upstream/master
       end
     end
 
-<<<<<<< HEAD
-lib_dir = ""
-{% if flag?(:darwin) %}
-llvm_config_bin = "/usr/local/opt/llvm/bin/llvm-config"
-if File.exists?(llvm_config_bin) && File.executable?(llvm_config_bin)
-  system_libs = [`#{llvm_config_bin} --libdir`.chomp]
-  clang_binary = Path[llvm_config_bin].dirname + "/clang++"
-  system_includes = ["/usr/local/include", `#{llvm_config_bin} --includedir`.chomp]
-  lib_dir = "-L#{system_libs.first} "
-end
-{% end %}
-
-llvm_libs = find_libraries(system_libs, "LLVM")
-clang_libs = find_libraries(system_libs, "clang")
-=======
     case flags[index]
     when "-internal-isystem"
       internal_isystem = true
@@ -466,7 +439,6 @@ clang_libs = find_libraries(system_libs, "clang")
       system_lib_dirs << l
     else
     end
->>>>>>> upstream/master
 
     index += 1
   end
@@ -506,12 +478,6 @@ def parse_os_release(path)
   data
 end
 
-<<<<<<< HEAD
-STDERR.puts "Using clang binary #{clang_binary.inspect}"
-puts "CLANG_LIBS := #{lib_dir}" + libs.join(" ")
-puts "CLANG_INCLUDES := " + includes.join(" ")
-puts "CLANG_BINARY := " + clang_binary
-=======
 # Convenience functions for accessing OPTIONS
 def llvm_bindir() OPTIONS[:llvm_bindir].as String end
 def llvm_libdir() OPTIONS[:llvm_libdir].as String end
@@ -529,4 +495,3 @@ def makefile_variables() OPTIONS[:makefile_variables].as String end
 def spec_base() OPTIONS[:spec_base].as String end
 def llvm_cxx_flags() OPTIONS[:llvm_cxx_flags].as String end
 def llvm_ld_flags() OPTIONS[:llvm_ld_flags].as String end
->>>>>>> upstream/master
